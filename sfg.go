@@ -39,6 +39,14 @@ func findGmiFiles(path string) []string {
   return files
 }
 
+/* Embed each line in `p` html tag, so feed readers can easily display it
+*/
+func paragraphify(fileContent string) string {
+  paragraphs := strings.Split(fileContent, "\n")
+  return fmt.Sprintf("<p>%s</p>", strings.Join(paragraphs, "</p><p>"))
+}
+
+
 func getFileDate(fpath string) time.Time {
   info, err := os.Stat(fpath)
   if err != nil {
@@ -55,7 +63,7 @@ func feedEntry(fpath string, folderRoot string, url string) (*feeds.Item, error)
   if err != nil {
     return nil, err
   }
-  desc := string(data)
+  desc := paragraphify(string(data))
   item := &feeds.Item {
     Title: title,
     Link: &feeds.Link{Href: link},
@@ -107,7 +115,6 @@ func main() {
           c.String("author"),
           c.String("email"),
         )
-        fmt.Printf("Dir %s\n", path)
         files := findGmiFiles(path)
         if len(files) == 0 {
           log.Fatal(fmt.Sprintf("Couldn't find .gmi files in %s", path))
